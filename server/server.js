@@ -21,6 +21,14 @@ app.post('/todoros', (req, res) => {
     })
 });
 
+app.get('/todoros', (req, res) => {
+    Todoro.find().then((docs) => {
+        res.send({todoros});
+    }, (e) => {
+        res.status(400).send(e);
+    })
+});
+
 app.listen(3000, () => {
     console.log('Started on port 3000');
 })
