@@ -4,8 +4,18 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Todoro} = require('./../models/todoro');
 
+const todoros = [{
+    title: 'First test'
+}, {
+    title: 'Second test'
+}]
+
 beforeEach((done) => {
-    Todoro.remove({}).then(() => done())
+    Todoro.remove({}).then(() =>{
+        return Todoro.insertMany(todoros);
+    }).then (() => {
+        done();
+    })
 })
 
 describe('POST /todoros', () => {
@@ -24,7 +34,7 @@ describe('POST /todoros', () => {
                     return done(err);
                 }
 
-                Todoro.find().then((todoros) => {
+                Todoro.find({title}).then((todoros) => {
                     expect(todoros.length).toBe(1);
                     expect(todoros[0].title).toBe(title);
                     done();
@@ -42,10 +52,21 @@ describe('POST /todoros', () => {
                     return done(err);
                 }
                 Todoro.find().then((todoros) => {
-                    expect(todoros.length).toBe(0);
+                    expect(todoros.length).toBe(2);
                     done();
                 }).catch((e) => done(e));
             
             })
     });
 });
+
+describe('GET /todoros', () => {
+    it('should get all todoros', (done) => {
+        request(app)
+            .get('/todoros')
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todoros.length).toBe(2)
+            }).end(done);
+    })
+})

@@ -22,7 +22,7 @@ app.post('/todoros', (req, res) => {
 });
 
 app.get('/todoros', (req, res) => {
-    Todoro.find().then((docs) => {
+    Todoro.find().then((todoros) => {
         res.send({todoros});
     }, (e) => {
         res.status(400).send(e);
