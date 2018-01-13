@@ -1,12 +1,15 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todoro} = require('./../models/todoro');
 
 const todoros = [{
-    title: 'First test'
+    title: 'First test',
+    _id: new ObjectID(),
 }, {
+    _id: new ObjectID(),
     title: 'Second test'
 }]
 
@@ -69,4 +72,32 @@ describe('GET /todoros', () => {
                 expect(res.body.todoros.length).toBe(2)
             }).end(done);
     })
+});
+
+describe('GET /todoros/:id', () => {
+    it('should return todoros doc', (done) => {
+        request(app)
+            .get(`/todoros/${todoros[0]._id.toHexString()}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todoro.title).toBe(todoros[0].title)
+            })
+            .end(done)
+    });
+
+    it('should return a 404 if todoro not found', (done) => {
+        let id = new ObjectID();
+        request(app)
+            .get(`/todoros/${id.toHexString()}`)
+            .expect(404)
+            .end(done)
+    });
+
+    it('should return 400 for non-object ids', (done) => {
+        request(app)
+            .get('/todoros/123')
+            .expect(400)
+            .end(done)
+    })
+
 })
