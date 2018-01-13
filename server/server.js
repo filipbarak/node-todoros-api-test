@@ -52,6 +52,27 @@ app.get('/todoros/:id', (req, res) => {
     })
 })
 
+app.delete('/todoros/:id', (req, res) => {
+    let id = req.params.id;
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+
+    Todoro.findByIdAndRemove(id).then(todoro => {
+        if (!todoro) {
+            return res.status(404).send({
+                message: 'That id doesnt exist'
+            })
+        }
+        res.send({todoro});
+
+    }, e => {
+        res.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`Started up at port ${port}`);
 })
