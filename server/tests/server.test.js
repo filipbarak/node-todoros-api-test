@@ -100,4 +100,45 @@ describe('GET /todoros/:id', () => {
             .end(done)
     })
 
+});
+
+describe('DELETE /todoros/:id', () => {
+    it('should remove a todo', (done) => {
+        let hexId = todoros[1]._id.toHexString();
+
+        request(app)
+            .delete(`/todoros/${hexId}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todoro._id).toBe(hexId);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                Todoro.findById(hexId).then(todoro => {
+                    expect(todoro).toNotExist();
+                    done();
+                }).catch(err => {
+                    done(err);
+                })
+            })
+    });
+
+    it('should return 404 if todoro not found', (done) => {
+        let id = new ObjectID();
+        request(app)
+            .delete(`/todoros/${id.toHexString()}`)
+            .expect(404)
+            .end(done)
+
+    });
+
+    it('should return 400 if objectId is invalid', (done) => {
+        request(app)
+        .delete('/todoros/123')
+        .expect(400)
+        .end(done)
+    })
 })
