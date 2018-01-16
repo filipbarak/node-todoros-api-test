@@ -12,6 +12,7 @@ if (env === 'development') {
 var express = require('express');
 var bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
+const _ = require('lodash');
 
 var {mongoose} = require('./db/mongoose.js');
 var {Todoro} = require('./models/todoro.js');
@@ -83,6 +84,20 @@ app.delete('/todoros/:id', (req, res) => {
         res.status(400).send();
     });
 });
+
+app.post('/users', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+    let newUser = new User(body);
+
+    newUser.save().then(() => {
+        return newUser.generateAuthToken();
+        // res.send(user);
+    }).then((token) => {
+        res.header('x-auth', token).send(newUser);
+    }).catch(e => {
+        res.status(400).send(e);
+    })
+})
 
 app.listen(port, () => {
     console.log(`Started up at port ${port}`);
