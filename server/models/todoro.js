@@ -8,6 +8,10 @@ var Todoro = mongoose.model('Todoro', {
     },
     description: {
         type: String
+    },
+    _creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
     }
 });
 

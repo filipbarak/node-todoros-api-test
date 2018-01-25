@@ -24,9 +24,10 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json())
 
-app.post('/todoros', (req, res) => {
+app.post('/todoros', authenticate, (req, res) => {
     var todoro = new Todoro({
-        title: req.body.title
+        title: req.body.title,
+        _creator: req.user._id // id of the user from the authenticate middleware
     });
 
     todoro.save().then((doc) => {
@@ -36,8 +37,10 @@ app.post('/todoros', (req, res) => {
     })
 });
 
-app.get('/todoros', (req, res) => {
-    Todoro.find().then((todoros) => {
+app.get('/todoros', authenticate, (req, res) => {
+    Todoro.find({
+        _creator: req.user._id
+    }).then((todoros) => {
         res.send({todoros});
     }, (e) => {
         res.status(400).send(e);
@@ -46,26 +49,30 @@ app.get('/todoros', (req, res) => {
 
 // GET /todos/id
 
-app.get('/todoros/:id', (req, res) => {
+app.get('/todoros/:id', authenticate, (req, res) => {
     let id = req.params.id;
     if (!ObjectID.isValid(id)) {
         return res.status(400).send({
             message: 'ID is not valid'
         })
     }
-    Todoro.findById(id).then((todoro) => {
+
+    Todoro.findOne({
+        _id: id,
+        _creator: req.user._id
+    }).then((todoro) => {
         if (!todoro) {
             return res.status(404).send({
                 message: 'Todoro not found.'
             });
         }
-        res.send({todoro})
+        res.send({todoro});
     }, (e) => {
         res.status(400).send()
     })
 })
 
-app.delete('/todoros/:id', (req, res) => {
+app.delete('/todoros/:id', authenticate, (req, res) => {
     let id = req.params.id;
     if (!ObjectID.isValid(id)) {
         return res.status(400).send({
@@ -73,7 +80,10 @@ app.delete('/todoros/:id', (req, res) => {
         })
     }
 
-    Todoro.findByIdAndRemove(id).then(todoro => {
+    Todoro.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then(todoro => {
         if (!todoro) {
             return res.status(404).send({
                 message: 'That id doesnt exist'

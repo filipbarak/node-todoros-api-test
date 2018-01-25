@@ -16,6 +16,7 @@ describe('POST /todoros', () => {
 
         request(app)
             .post('/todoros')
+            .set('x-auth', users[0].tokens[0].token)
             .send({title})
             .expect(200)
             .expect((res) => {
@@ -37,6 +38,7 @@ describe('POST /todoros', () => {
     it('should not create todo with invalid body data', (done) => {
         request(app)
             .post('/todoros')
+            .set('x-auth', users[0].tokens[0].token)
             .send({})
             .expect(400)
             .end((err, res) => {
@@ -56,9 +58,10 @@ describe('GET /todoros', () => {
     it('should get all todoros', (done) => {
         request(app)
             .get('/todoros')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(200)
             .expect((res) => {
-                expect(res.body.todoros.length).toBe(2)
+                expect(res.body.todoros.length).toBe(1);
             }).end(done);
     })
 });
@@ -67,6 +70,7 @@ describe('GET /todoros/:id', () => {
     it('should return todoros doc', (done) => {
         request(app)
             .get(`/todoros/${todoros[0]._id.toHexString()}`)
+            .set('x-auth', users[0].tokens[0].token)
             .expect(200)
             .expect(res => {
                 expect(res.body.todoro.title).toBe(todoros[0].title)
@@ -74,10 +78,19 @@ describe('GET /todoros/:id', () => {
             .end(done)
     });
 
+    it('should not return todoros doc created by other user', (done) => {
+        request(app)
+            .get(`/todoros/${todoros[1]._id.toHexString()}`)
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(404)
+            .end(done)
+    });
+
     it('should return a 404 if todoro not found', (done) => {
         let id = new ObjectID();
         request(app)
             .get(`/todoros/${id.toHexString()}`)
+            .set('x-auth', users[0].tokens[0].token)
             .expect(404)
             .end(done)
     });
@@ -85,6 +98,7 @@ describe('GET /todoros/:id', () => {
     it('should return 400 for non-object ids', (done) => {
         request(app)
             .get('/todoros/123')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(400)
             .end(done)
     })
@@ -97,6 +111,7 @@ describe('DELETE /todoros/:id', () => {
 
         request(app)
             .delete(`/todoros/${hexId}`)
+            .set('x-auth', users[1].tokens[0].token)
             .expect(200)
             .expect((res) => {
                 expect(res.body.todoro._id).toBe(hexId);
@@ -119,6 +134,7 @@ describe('DELETE /todoros/:id', () => {
         let id = new ObjectID();
         request(app)
             .delete(`/todoros/${id.toHexString()}`)
+            .set('x-auth', users[0].tokens[0].token)
             .expect(404)
             .end(done)
 
@@ -127,6 +143,7 @@ describe('DELETE /todoros/:id', () => {
     it('should return 400 if objectId is invalid', (done) => {
         request(app)
         .delete('/todoros/123')
+        .set('x-auth', users[0].tokens[0].token)
         .expect(400)
         .end(done)
     })
@@ -227,7 +244,7 @@ describe('POST /users/login', () => {
                 }
 
                 User.findById(users[1]._id).then(user => {
-                    expect(user.tokens[0]).toInclude({
+                    expect(user.tokens[1]).toInclude({
                         access: 'auth',
                         token: res.headers['x-auth']
                     });
