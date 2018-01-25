@@ -1,22 +1,13 @@
-var env = process.env.NODE_ENV || 'development';
-
-if (env === 'development') {
-    process.env.PORT = 3000;
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoroApp';
-} else if (env === 'test') {
-    process.env.PORT = 3000;
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoroAppTest';
-}
-
+require('./config/config');
 
 var express = require('express');
 var bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
-var {mongoose} = require('./db/mongoose.js');
-var {Todoro} = require('./models/todoro.js');
-var {User} = require('./models/user.js');
+var {mongoose} = require('./db/mongoose');
+var {Todoro} = require('./models/todoro');
+var {User} = require('./models/user');
 var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
